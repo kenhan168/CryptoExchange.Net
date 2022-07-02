@@ -32,6 +32,8 @@ namespace CryptoExchange.Net.OrderBook
         private readonly ConcurrentQueue<object> _processQueue;
         private readonly bool _validateChecksum;
 
+        protected Action handleUpdate;
+
         private class EmptySymbolOrderBookEntry : ISymbolOrderBookEntry
         {
             public decimal Quantity { get => 0m;
@@ -106,6 +108,11 @@ namespace CryptoExchange.Net.OrderBook
                 OnStatusChange?.Invoke(old, _status);
             }
         }
+
+        /// <summary>
+        /// Indicate whether HandleUpdate should be called in the Actual ExchangeService
+        /// </summary>
+        public bool IsRunningArbitrage { get; set; }
 
         /// <inheritdoc/>
         public long LastSequenceNumber { get; private set; }
@@ -631,7 +638,13 @@ namespace CryptoExchange.Net.OrderBook
                     if (item is InitialOrderBookItem iobi)
                         ProcessInitialOrderBookItem(iobi);
                     if (item is ProcessQueueItem pqi)
+                    {
                         ProcessQueueItem(pqi);
+                        if (IsRunningArbitrage)
+                        {
+                            handleUpdate();
+                        }
+                    }
                     else if (item is ChecksumItem ci)
                         ProcessChecksum(ci);
                 }
