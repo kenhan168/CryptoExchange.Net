@@ -32,7 +32,7 @@ namespace CryptoExchange.Net.OrderBook
         private readonly ConcurrentQueue<object> _processQueue;
         private readonly bool _validateChecksum;
 
-        protected Action handleUpdate;
+        protected Action<string> handleUpdate;
 
         private class EmptySymbolOrderBookEntry : ISymbolOrderBookEntry
         {
@@ -642,7 +642,7 @@ namespace CryptoExchange.Net.OrderBook
                         ProcessQueueItem(pqi);
                         if (IsRunningArbitrage)
                         {
-                            handleUpdate();
+                            handleUpdate(Symbol);
                         }
                     }
                     else if (item is ChecksumItem ci)
